@@ -6,7 +6,6 @@ from tkcalendar import DateEntry
 class Funcionario_view(tk.Frame):
 
     def __init__(self, master=None):
-        self.funcionarios = []
         super().__init__(master)
         self.master = master
         self.pack()
@@ -21,6 +20,23 @@ class Funcionario_view(tk.Frame):
 
         self.titulo_dados = tk.Label(self.container_titulo, text="CADASTRAR NOVO FUNCIONÁRIO")
         self.titulo_dados.pack()
+
+        # Campo id
+        self.container_id = self.criar_container_padrao()
+
+        self.id_label = tk.Label(self.container_id, text="Id")
+        self.id_label["width"] = 20
+        self.id_label["anchor"] = tk.NW
+        self.id_label.pack(side=tk.LEFT)
+
+        self.id = tk.Entry(self.container_id)
+        self.id["width"] = 10
+        self.id.pack(side=tk.LEFT)
+
+        self.botao_buscar = tk.Button(self.container_id)
+        self.botao_buscar["text"] = "Buscar"
+        self.botao_buscar["command"] = self.buscar_funcionario
+        self.botao_buscar.pack(side=tk.LEFT)
 
         # Campo nome
         self.container_nome = self.criar_container_padrao()
@@ -116,17 +132,33 @@ class Funcionario_view(tk.Frame):
         return container
 
     def add_funcionario(self):
-        funcionario = Funcionario(self.cargo.get(), "", int(self.qtde_dependetes.get()), self.nome.get(), self.sexo.get(), self.nascimento.get())
-        self.funcionarios.append(funcionario)
+        funcionario = Funcionario(self.cargo.get(), 0, int(self.qtde_dependetes.get()), self.nome.get(), self.sexo.get(), self.nascimento.get(), 950)
+        status, mensagem = funcionario.insert_funcionario()
 
-        self.mensagem["text"] = "Novo funcionário criado!"
+        if status:
+            self.limpar_tela()
 
-        self.limpar_tela()
+        self.mensagem["text"] = mensagem
 
     def limpar_tela(self):
+        self.id.delete(0, tk.END)
         self.nome.delete(0, tk.END)
         self.nascimento.delete(0, tk.END)
         self.cargo.delete(0, tk.END)
         self.sexo.set("")
         self.qtde_dependetes.set("0")
         self.mensagem["text"] = ""
+
+    def buscar_funcionario(self):
+        funcionario = Funcionario("", 0, 0, "", "", "", 0)
+        id_funcionario = self.id.get()
+        status, mensagem = funcionario.select_funcionario(id_funcionario)
+
+        if status:
+            self.nome.insert(0, funcionario.nome)
+            self.nascimento.set_date(funcionario.data_nascimento)
+            self.cargo.insert(0, funcionario.cargo)
+            self.sexo.set(funcionario.sexo)
+            self.qtde_dependetes.set(funcionario.qtd_dependentes)
+
+        self.mensagem["text"] = mensagem
