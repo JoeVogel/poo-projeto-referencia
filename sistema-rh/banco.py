@@ -9,7 +9,6 @@ class Banco:
     def createTables(self):
         try:
             c = self.conexao.cursor()
-            print("Base de dados criada e conectada!")
 
             c.execute("""create table if not exists funcionarios (
                                  id_funcionario integer primary key autoincrement,
@@ -21,7 +20,7 @@ class Banco:
                                  salario integer,
                                  id_setor integer)""")
             self.conexao.commit()
-            print("Tabela criada")
+            print("Banco de dados ok")
             c.close()
 
         except sqlite3.Error as error:

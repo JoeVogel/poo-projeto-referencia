@@ -10,6 +10,7 @@ class Funcionario_view(tk.Frame):
         self.master = master
         self.pack()
         self.criar_widget_funcionario()
+        self.funcionario = Funcionario("", 0, 0, "", "", "", 0)
 
     def criar_widget_funcionario(self):
         # Título
@@ -112,6 +113,22 @@ class Funcionario_view(tk.Frame):
         self.botao_criar["fg"] = "white"
         self.botao_criar.pack(side=tk.LEFT)
 
+        self.botao_atualizar = tk.Button(self.container_botoes)
+        self.botao_atualizar["text"] = "Atualizar"
+        self.botao_atualizar["command"] = self.atualizar_funcionario
+        self.botao_atualizar["bg"] = "green"
+        self.botao_atualizar["fg"] = "white"
+        self.botao_atualizar["state"] = "disabled"
+        self.botao_atualizar.pack(side=tk.LEFT)
+
+        self.botao_excluir = tk.Button(self.container_botoes)
+        self.botao_excluir["text"] = "Excluir"
+        self.botao_excluir["command"] = self.excluir_funcionario
+        self.botao_excluir["bg"] = "red"
+        self.botao_excluir["fg"] = "white"
+        self.botao_excluir["state"] = "disabled"
+        self.botao_excluir.pack(side=tk.LEFT)
+
         self.botao_limpar = tk.Button(self.container_botoes)
         self.botao_limpar["text"] = "Limpar"
         self.botao_limpar["command"] = self.limpar_tela
@@ -132,11 +149,21 @@ class Funcionario_view(tk.Frame):
         return container
 
     def add_funcionario(self):
-        funcionario = Funcionario(self.cargo.get(), 0, int(self.qtde_dependetes.get()), self.nome.get(), self.sexo.get(), self.nascimento.get(), 950)
-        status, mensagem = funcionario.insert_funcionario()
+        self.funcionario.nome = self.nome.get()
+        self.funcionario.cargo = self.cargo.get()
+        self.funcionario.id_setor = 0
+        self.funcionario.qtd_dependentes = self.qtde_dependetes.get()
+        self.funcionario.sexo = self.sexo.get()
+        self.funcionario.data_nascimento = self.nascimento.get()
+        self.funcionario.salario = 950
+
+        status, id_gerado, mensagem = self.funcionario.insert_funcionario()
 
         if status:
-            self.limpar_tela()
+            self.id.insert(0, id_gerado)
+            self.botao_criar.config(state="disabled")
+            self.botao_excluir.config(state="normal")
+            self.botao_atualizar.config(state="normal")
 
         self.mensagem["text"] = mensagem
 
@@ -148,17 +175,51 @@ class Funcionario_view(tk.Frame):
         self.sexo.set("")
         self.qtde_dependetes.set("0")
         self.mensagem["text"] = ""
+        self.funcionario = Funcionario("", 0, 0, "", "", "", 0)
+
+        self.botao_criar.config(state="normal")
+        self.botao_excluir.config(state="disabled")
+        self.botao_atualizar.config(state="disabled")
 
     def buscar_funcionario(self):
-        funcionario = Funcionario("", 0, 0, "", "", "", 0)
-        id_funcionario = self.id.get()
-        status, mensagem = funcionario.select_funcionario(id_funcionario)
+        status, mensagem = self.funcionario.select_funcionario(self.id.get())
 
         if status:
-            self.nome.insert(0, funcionario.nome)
-            self.nascimento.set_date(funcionario.data_nascimento)
-            self.cargo.insert(0, funcionario.cargo)
-            self.sexo.set(funcionario.sexo)
-            self.qtde_dependetes.set(funcionario.qtd_dependentes)
+            self.nome.insert(0, self.funcionario.nome)
+            self.nascimento.set_date(self.funcionario.data_nascimento)
+            self.cargo.insert(0, self.funcionario.cargo)
+            self.sexo.set(self.funcionario.sexo)
+            self.qtde_dependetes.set(self.funcionario.qtd_dependentes)
+
+            self.botao_criar.config(state="disabled")
+            self.botao_excluir.config(state="normal")
+            self.botao_atualizar.config(state="normal")
+        else:
+            self.limpar_tela()
+
+        self.mensagem["text"] = mensagem
+
+    def atualizar_funcionario(self):
+        self.funcionario.nome = self.nome.get()
+        self.funcionario.cargo = self.cargo.get()
+        self.funcionario.id_setor = 0
+        self.funcionario.qtd_dependentes = self.qtde_dependetes.get()
+        self.funcionario.sexo = self.sexo.get()
+        self.funcionario.data_nascimento = self.nascimento.get()
+        self.funcionario.salario = 950
+
+        status, mensagem = self.funcionario.update_funcionario()
+
+        if status:
+            self.limpar_tela()
+
+        self.mensagem["text"] = mensagem
+
+    def excluir_funcionario(self):
+        self.funcionario.id_funcionario = self.id.get()
+        status, mensagem = self.funcionario.delete_funcionario()
+
+        if status:
+            self.limpar_tela()
 
         self.mensagem["text"] = mensagem
